@@ -55,18 +55,10 @@ Lemma LCU_simplify (k : R) : forall {n : nat} (Ua Ub : base_ucom (n - 1)),
   uc_well_typed Ua ->
   uc_well_typed Ub ->
   uc_eval (LCU k Ua Ub) =
-    (y_rotation (acos (√ (k / (k + 1))))
-       × (∣0⟩⟨0∣ × (σx × (∣0⟩⟨0∣ × y_rotation (acos (√ (k / (k + 1)))))))
-         ⊗ I (2 ^ (n - 1))
-    .+ y_rotation (acos (√ (k / (k + 1))))
-       × (∣0⟩⟨0∣ × (σx × (∣1⟩⟨1∣ × y_rotation (acos (√ (k / (k + 1)))))))
-         ⊗ uc_eval Ua
-    .+ (y_rotation (acos (√ (k / (k + 1))))
-       × (∣1⟩⟨1∣ × (σx × (∣0⟩⟨0∣ × y_rotation (acos (√ (k / (k + 1)))))))
-         ⊗ uc_eval Ub
-    .+ y_rotation (acos (√ (k / (k + 1))))
-       × (∣1⟩⟨1∣ × (σx × (∣1⟩⟨1∣ × y_rotation (acos (√ (k / (k + 1)))))))
-         ⊗ (uc_eval Ub × uc_eval Ua))).
+    y_rotation (acos (√ (k / (k + 1)))) × ∣0⟩⟨1∣
+      × y_rotation (acos (√ (k / (k + 1)))) ⊗ uc_eval Ua
+    .+ y_rotation (acos (√ (k / (k + 1)))) × ∣1⟩⟨0∣
+      × y_rotation (acos (√ (k / (k + 1)))) ⊗ uc_eval Ub.
 Proof.
   intros n Ua Ub Hn Hk HUa HUb.
   unfold LCU.
@@ -98,6 +90,21 @@ Proof.
   Msimpl.
   distribute_plus.
   Msimpl.
+
+  remember (∣ 0 ⟩ × (∣ 0 ⟩) †) as ψ00.
+  remember (∣ 1 ⟩ × (∣ 1 ⟩) †)as ψ11.
+  repeat rewrite <- Mmult_assoc.
+  rewrite (Mmult_assoc (y_rotation _) ψ00).
+  rewrite 2 (Mmult_assoc (y_rotation _) (ψ00 × _)).
+  rewrite (Mmult_assoc (y_rotation _) ψ11).
+  rewrite 2 (Mmult_assoc (y_rotation _) (ψ11 × _)).
+  replace (ψ00 × σx × ψ00) with (@Zero 2 2).
+  replace (ψ00 × σx × ψ11) with (∣0⟩⟨1∣).
+  replace (ψ11 × σx × ψ00) with (∣1⟩⟨0∣).
+  replace (ψ11 × σx × ψ11) with (@Zero 2 2).
+  2-5: subst; solve_matrix.
+  Msimpl.
+  repeat rewrite Mmult_assoc.
   reflexivity.
 
   apply y_rotation_unitary.
@@ -131,7 +138,7 @@ Proof.
   rewrite LCU_simplify by assumption.
   rewrite prob_partial_meas_alt. 
  
-  (* more simplification in LCU_simplify would help here *)
+  (* now it's a matter of simplifying the expression... *)
 
 Admitted.
   
