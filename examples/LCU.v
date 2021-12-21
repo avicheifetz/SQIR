@@ -62,34 +62,7 @@ Proof.
    +rewrite H. rewrite sqrt_1.  rewrite Rplus_0_l.  autorewrite with R_db. apply Rle_0_1.
 Qed.
 
-Lemma LCU_helper00:
-  forall {n : nat} (k : R) (Ua Ub : base_ucom (n - 1)),
-    (n > 0)%nat ->
-    uc_well_typed Ua ->
-    (k >= 0) -> 
-  uc_well_typed Ub ->
-    y_rotation (2 * acos ( √ (k / (k + 1)))) × ∣0⟩⟨0∣ = √(k / (k + 1)) .* ∣0⟩⟨0∣ .+ ( √(1 /(k + 1)) .* ∣1⟩⟨0∣).
-Proof. 
-  intros. unfold y_rotation. solve_matrix.
-  -simpl.  replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))). 
-   +rewrite cos_acos. auto. apply sqrt_helper. apply H1.
-   +  rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. 
-      rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto.
-      autorewrite with R_db. auto.
-  -simpl. replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))).
-   + rewrite sin_acos.  rewrite Rsqr_sqrt.  replace (1 - k / (k + 1)) with (1 / (k + 1)).
-     autorewrite with R_db. auto.  replace (1 - k / (k + 1)) with ((k + 1) / (k + 1) - k / (k + 1) ).
-     rewrite <- Rdiv_minus_distr. rewrite Rplus_comm. replace ( 1 + k - k) with 1.
-     reflexivity. autorewrite with R_db. rewrite Rplus_assoc.  rewrite <- Rminus_unfold.
-     rewrite Rminus_eq_0. autorewrite with R_db.
-     reflexivity.  autorewrite with R_db. reflexivity.
-     destruct H1.
-     * apply Rlt_le.  apply Rdiv_lt_0_compat. apply H1. apply Rlt_trans with k. apply H1.
-       apply Rlt_n_Sn.
-     * rewrite H1. autorewrite with R_db. apply Rle_refl.
-     * apply sqrt_helper. apply H1.
-   + rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto. autorewrite with R_db. auto.
-Qed.
+
 Lemma LCU_helperRotate:
   forall {n : nat} (k : R) (Ua Ub : base_ucom (n - 1)),
     (n > 0)%nat ->
@@ -166,62 +139,6 @@ Proof.
    + rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto. autorewrite with R_db. auto.
 Qed.
 
-Lemma LCU_helper10:
-  forall {n : nat} (k : R) (Ua Ub : base_ucom (n - 1)),
-    (n > 0)%nat ->
-    uc_well_typed Ua ->
-    (k >= 0) -> 
-  uc_well_typed Ub ->
-    y_rotation (2 * acos ( √ (k / (k + 1)))) × ∣1⟩⟨0∣ = (- √/( (k + 1))) .* ∣0⟩⟨0∣ .+ ( √(k /(k + 1)) .* ∣1⟩⟨0∣).
-Proof. 
-  intros. unfold y_rotation. solve_matrix.
-  2:{simpl.  replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))). 
-   +rewrite cos_acos. auto. apply sqrt_helper. apply H1.
-   +  rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. 
-      rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto.
-      autorewrite with R_db. auto. }
-  -simpl. replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))).
-   + rewrite sin_acos.  rewrite Rsqr_sqrt.  replace (1 - k / (k + 1)) with (1 / (k + 1)).
-     autorewrite with R_db. auto.  replace (1 - k / (k + 1)) with ((k + 1) / (k + 1) - k / (k + 1) ).
-     rewrite <- Rdiv_minus_distr. rewrite Rplus_comm. replace ( 1 + k - k) with 1.
-     reflexivity. autorewrite with R_db. rewrite Rplus_assoc.  rewrite <- Rminus_unfold.
-     rewrite Rminus_eq_0. autorewrite with R_db.
-     reflexivity.  autorewrite with R_db. reflexivity.
-     destruct H1.
-     * apply Rlt_le.  apply Rdiv_lt_0_compat. apply H1. apply Rlt_trans with k. apply H1.
-       apply Rlt_n_Sn.
-     * rewrite H1. autorewrite with R_db. apply Rle_refl.
-     * apply sqrt_helper. apply H1.
-   + rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto. autorewrite with R_db. auto.
-Qed.
-Lemma LCU_helper11:
-  forall {n : nat} (k : R) (Ua Ub : base_ucom (n - 1)),
-    (n > 0)%nat ->
-    uc_well_typed Ua ->
-    (k >= 0) -> 
-  uc_well_typed Ub ->
-    y_rotation (2 * acos ( √ (k / (k + 1)))) × ∣1⟩⟨1∣ =  (- √/( (k + 1))) .* ∣0⟩⟨1∣ .+ ( √(k /(k + 1)) .* ∣1⟩⟨1∣).
-Proof. 
-  intros. unfold y_rotation. solve_matrix.
-  2 :{simpl.  replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))). 
-   +rewrite cos_acos. auto. apply sqrt_helper. apply H1.
-   +  rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. 
-      rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto.
-      autorewrite with R_db. auto. }
-  -simpl. replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))).
-   + rewrite sin_acos.  rewrite Rsqr_sqrt.  replace (1 - k / (k + 1)) with (1 / (k + 1)).
-     autorewrite with R_db. auto.  replace (1 - k / (k + 1)) with ((k + 1) / (k + 1) - k / (k + 1) ).
-     rewrite <- Rdiv_minus_distr. rewrite Rplus_comm. replace ( 1 + k - k) with 1.
-     reflexivity. autorewrite with R_db. rewrite Rplus_assoc.  rewrite <- Rminus_unfold.
-     rewrite Rminus_eq_0. autorewrite with R_db.
-     reflexivity.  autorewrite with R_db. reflexivity.
-     destruct H1.
-     * apply Rlt_le.  apply Rdiv_lt_0_compat. apply H1. apply Rlt_trans with k. apply H1.
-       apply Rlt_n_Sn.
-     * rewrite H1. autorewrite with R_db. apply Rle_refl.
-     * apply sqrt_helper. apply H1.
-   + rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto. autorewrite with R_db. auto.
-Qed.
 (* uc_eval LCU simplifies to this expression (which can be further simplified...
    but it'll take a little work). -KH *)
 Lemma LCU_simplify (k : R) : forall {n : nat} (Ua Ub : base_ucom (n - 1)),
@@ -297,27 +214,20 @@ Proof.
   apply uc_well_typed_map_qubits.
   assumption.
    Qed.
-
-
-
-Lemma LCU_simplify_rotation (k : R) : forall {n : nat} (Ua Ub : base_ucom (n - 1)),
-  (n > 0)%nat -> (k >= 0) -> 
-  uc_well_typed Ua ->
-  uc_well_typed Ub ->
-    y_rotation (2 * acos (√ (k / (k + 1)))) × ∣0⟩⟨1∣
-      × y_rotation (2 * acos (√ (k / (k + 1)))) ⊗ uc_eval Ua
-    .+ y_rotation (2 * acos ( √ (k / (k + 1)))) × ∣1⟩⟨0∣
-    × y_rotation (2 * acos (√ (k / (k + 1)))) ⊗ uc_eval Ub =
-     (√( k/ (k + 1)) .* ∣0⟩⟨1∣ .+ √(1 /(k + 1)) .* ∣1⟩⟨1∣)
-     ×  y_rotation (2 * acos (√ (k / (k + 1)))) ⊗ uc_eval Ua
-    .+  (- √( / (k + 1)) .* ∣0⟩⟨0∣ .+ √(k /(k + 1)) .* ∣1⟩⟨0∣)
-   ×  y_rotation (2 * acos (√ (k / (k + 1)))) ⊗ uc_eval Ub.
-   Proof.
-     intros.
-     rewrite LCU_helperRotate with k Ua Ub; try reflexivity; try  assumption. solve_matrix.
-   Qed.
-
-
+Axiom Unitary_norm : forall {n : nat} (Ua Ub : base_ucom (n - 1)), @Quantum.norm (n - 1) ((uc_eval Ub) .+  -1 .* (uc_eval Ua)) <= 2.
+(*Lemma LCU_helper (k : R) :
+   forall {n : nat} (Ua Ub : base_ucom (n - 1)),
+    (√ (/ (k + 1)) * √ (k * / (k + 1)) .* (∣ 0 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ua)
+     .+ √ (k * / (k + 1)) * √ (k * / (k + 1)) .* (∣ 0 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ua)
+     .+ (√ (/ (k + 1)) * √ (/ (k + 1)) .* (∣ 1 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ua)
+         .+ √ (k * / (k + 1)) * √ (/ (k + 1)) .* (∣ 1 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ua))
+     .+ (- (√ (k * / (k + 1)) * √ (/ (k + 1)))
+         .* (∣ 0 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ub)
+         .+ √ (/ (k + 1)) * √ (/ (k + 1)) .* (∣ 0 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ub)
+         .+ (√ (k * / (k + 1)) * √ (k * / (k + 1))
+             .* (∣ 1 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ub)
+             .+ - (√ (/ (k + 1)) * √ (k * / (k + 1)))
+                .* (∣ 1 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ub)))) = (√ (/ (k + 1)) * √ (k * / (k + 1)) .* (∣ 0 ⟩ × ⟨ 0 ∣ ⊗ (uc_eval Ub) + (uc_eval Ua) *)
 Lemma LCU_success_probability (k : R) :
    forall {n : nat} (Ua Ub : base_ucom (n - 1)),
   (n > 0)%nat -> (k >= 0) -> 
@@ -329,11 +239,31 @@ Proof.
 
   intros n Ua Ub Hn Hk HUa HUb.
   rewrite LCU_simplify by assumption.
-  rewrite LCU_helperRotate with k Ua Ub; try reflexivity; try  assumption. solve_matrix.
-    autorewrite with R_db C_db ket_db eval_db.
-     specialize (@partial_meas_tensor 1 n) as H1.
-  repeat rewrite Nat.pow_1_r in H1.
-  rewrite H1; clear H1.
+  rewrite LCU_helperRotate with k Ua Ub; try reflexivity; try  assumption.
+   rewrite prob_partial_meas_alt.
+  solve_matrix.
+  autorewrite with R_db C_db ket_db eval_db.
+   restore_dims.
+    Msimpl.
+    Search kron.
+    repeat rewrite <- Mscale_kron_dist_l.
+    Search kron.
+    repeat rewrite <- kron_plus_distr_r.
+    Search Mmult.
+   Msimpl.
+   restore_dims.
+   Set Printing All.
+   rewrite kron_mixed_product.
+
+  (*rewrite bra0ket1.
+    rewrite Mscale_kron_dist_l.
+    rewrite <- Mscale_kron_dist_r.
+    rewrite <- kron_plus_distr_l.
+    autorewrite with eval_db.
+    autorewrite with Cexp_db.
+    Msimpl.
+    Search Mmult.
+    rewrite <- kron_n_mult. *)
 Admitted.
   
 
