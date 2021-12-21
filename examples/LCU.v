@@ -233,7 +233,7 @@ Lemma LCU_success_probability (k : R) :
   (n > 0)%nat -> (k >= 0) -> 
   uc_well_typed Ua ->
   uc_well_typed Ub ->
-   @prob_partial_meas 1 n ∣1⟩ (uc_eval (LCU k Ua Ub)) <=
+   @prob_partial_meas 1 (n - 1) ∣1⟩ (uc_eval (LCU k Ua Ub)) <=
     (4 * k) / (k + 1)^2.
 Proof.
 
@@ -241,29 +241,17 @@ Proof.
   rewrite LCU_simplify by assumption.
   rewrite LCU_helperRotate with k Ua Ub; try reflexivity; try  assumption.
    rewrite prob_partial_meas_alt.
-  solve_matrix.
-  autorewrite with R_db C_db ket_db eval_db.
-   restore_dims.
-    Msimpl.
-    Search kron.
-    repeat rewrite <- Mscale_kron_dist_l.
-    Search kron.
-    repeat rewrite <- kron_plus_distr_r.
-    Search Mmult.
-   Msimpl.
-   restore_dims.
-   Set Printing All.
-   rewrite kron_mixed_product.
 
-  (*rewrite bra0ket1.
-    rewrite Mscale_kron_dist_l.
-    rewrite <- Mscale_kron_dist_r.
-    rewrite <- kron_plus_distr_l.
-    autorewrite with eval_db.
-    autorewrite with Cexp_db.
-    Msimpl.
-    Search Mmult.
-    rewrite <- kron_n_mult. *)
+(* examples of some tactics in SQIR -- it's currently slow, but could
+   be made faster with more careful use of tactics *)
+Msimpl.
+distribute_plus.
+distribute_scale.
+autorewrite with ket_db.
+Msimpl.
+
+(* and now back to you... *)
+
 Admitted.
   
 
