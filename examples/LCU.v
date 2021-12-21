@@ -19,45 +19,121 @@ Local Coercion Nat.b2n : bool >-> nat.
 Module LCU.
 
 (* Definition *)
-  Definition LCU {n} (k : R) (Ua Ub: base_ucom (n)) : base_ucom ( n) :=
-    Ry (acos(√ (k /(k + 1)))) 0; UnitaryOps.control 0 Ua; X 0; UnitaryOps.control 0 Ub; Ry (acos(√ (k /(k + 1)))) 0.
+  Definition LCU {n} (k : R) (Ua Ub: base_ucom (n - 1)) : base_ucom n :=
+    Ry (acos(√ (k /(k + 1)))) 0; 
+    cast (UnitaryOps.control 0 (map_qubits S Ua)) n; 
+    X 0; 
+    cast (UnitaryOps.control 0 (map_qubits S Ub)) n; 
+    Ry (acos(√ (k /(k + 1)))) 0.
   
 (** Proof **)
 Local Open Scope C_scope.
 Local Open Scope R_scope.
 
-Lemma LCU_success_probability (k : R) :
-   forall {n : nat} (Ua Ub : base_ucom (n)),
-  (n > 0)%nat -> (k >= 0) -> 
-   @prob_partial_meas 1 n (1 ⨂ ∣1⟩) (uc_eval (LCU k Ua Ub)) <=
-    (4 * k) / (k + 1)^2.
+Lemma uc_well_typed_cast_change_dim : forall m n o (u : base_ucom m),
+  (n <= o)%nat ->
+  uc_well_typed (cast u n) ->
+  uc_well_typed (cast u o).
 Proof.
-  intros n Ua Ub Hn Hk.
+  intros.
+  induction u.
+  simpl. 
+  inversion H0; subst.
+  constructor; auto.
+  inversion H0; subst.
+  constructor; lia.
+  inversion H0; subst.
+  constructor; lia.
+  inversion H0; subst.
+  constructor; lia.
+Qed.
+
+(* uc_eval LCU simplifies to this expression (which can be further simplified...
+   but it'll take a little work). -KH *)
+Lemma LCU_simplify (k : R) : forall {n : nat} (Ua Ub : base_ucom (n - 1)),
+  (n > 0)%nat -> (k >= 0) -> 
+  uc_well_typed Ua ->
+  uc_well_typed Ub ->
+  uc_eval (LCU k Ua Ub) =
+    (y_rotation (acos (√ (k / (k + 1))))
+       × (∣0⟩⟨0∣ × (σx × (∣0⟩⟨0∣ × y_rotation (acos (√ (k / (k + 1)))))))
+         ⊗ I (2 ^ (n - 1))
+    .+ y_rotation (acos (√ (k / (k + 1))))
+       × (∣0⟩⟨0∣ × (σx × (∣1⟩⟨1∣ × y_rotation (acos (√ (k / (k + 1)))))))
+         ⊗ uc_eval Ua
+    .+ (y_rotation (acos (√ (k / (k + 1))))
+       × (∣1⟩⟨1∣ × (σx × (∣0⟩⟨0∣ × y_rotation (acos (√ (k / (k + 1)))))))
+         ⊗ uc_eval Ub
+    .+ y_rotation (acos (√ (k / (k + 1))))
+       × (∣1⟩⟨1∣ × (σx × (∣1⟩⟨1∣ × y_rotation (acos (√ (k / (k + 1)))))))
+         ⊗ (uc_eval Ub × uc_eval Ua))).
+Proof.
+  intros n Ua Ub Hn Hk HUa HUb.
   unfold LCU.
   simpl uc_eval.
   autorewrite with eval_db.
-  bdestruct_all.
-  replace (n - (0 + 1))%nat with (n - 1)%nat by lia.
-  Msimpl_light.
-  simpl.
-  repeat (rewrite Mmult_assoc; restore_dims).
-  Qsimpl. 
-  2: {apply y_rotation_unitary.}
-  rewrite control_correct.
-  rewrite control_correct.
-  simpl.
-  rewrite prob_partial_meas_alt. 
+  rewrite 2 cast_control_commute.
+  rewrite 2 control_correct.
 
-  (*specialize (@partial_meas_tensor 1 n) as H1.
-  repeat rewrite Nat.pow_1_r in H1.
- rewrite H1; clear H1.
-*)
+  specialize (pad_dims_l Ub (S O)) as Htmp.
+  simpl in Htmp. 
+  replace (fun q : nat => S q) with S in Htmp by reflexivity.
+  replace (S (n - 1))%nat with n in Htmp by lia.
+  rewrite <- Htmp.
+  clear Htmp.
+
+  specialize (pad_dims_l Ua (S O)) as Htmp.
+  simpl in Htmp. 
+  replace (fun q : nat => S q) with S in Htmp by reflexivity.
+  replace (S (n - 1))%nat with n in Htmp by lia.
+  rewrite <- Htmp.
+  clear Htmp.
+
+  unfold proj, pad.
+  bdestruct_all. 
+  replace (n - (0 + 1))%nat with (n - 1)%nat by lia.
   simpl.
-  (*induction Hk.
-  Search R. 
-  2: { rewrite H0. auto. replace (0 + 1)%R with 1. simpl.  replace (√(0 / 1))%R with 0. Search acos. rewrite acos_0. simpl. replace (4 * 0 / (1 * (1 * 1))) with 0. . 
-} *)
+  Msimpl.
+  distribute_plus.
+  Msimpl.
+  distribute_plus.
+  Msimpl.
+  reflexivity.
+
+  apply y_rotation_unitary.
+  replace (map_qubits S Ua) with (map_qubits (fun q => 1 + q)%nat Ua) by reflexivity.
+  apply map_qubits_fresh. lia.
+  replace (map_qubits S Ua) with (map_qubits (fun q => 1 + q)%nat Ua) by reflexivity.
+  apply uc_well_typed_cast_change_dim with (n:=(1 + (n - 1))%nat).
+  lia.
+  apply uc_well_typed_map_qubits.
+  assumption.
+  replace (map_qubits S Ub) with (map_qubits (fun q => 1 + q)%nat Ub) by reflexivity.
+  apply map_qubits_fresh. lia.
+  replace (map_qubits S Ub) with (map_qubits (fun q => 1 + q)%nat Ub) by reflexivity.
+  apply uc_well_typed_cast_change_dim with (n:=(1 + (n - 1))%nat).
+  lia.
+  apply uc_well_typed_map_qubits.
+  assumption.
 Qed.
+
+
+Lemma LCU_success_probability (k : R) :
+   forall {n : nat} (Ua Ub : base_ucom (n - 1)),
+  (n > 0)%nat -> (k >= 0) -> 
+  uc_well_typed Ua ->
+  uc_well_typed Ub ->
+   @prob_partial_meas 1 n ∣1⟩ (uc_eval (LCU k Ua Ub)) <=
+    (4 * k) / (k + 1)^2.
+Proof.
+
+  intros n Ua Ub Hn Hk HUa HUb.
+  rewrite LCU_simplify by assumption.
+  rewrite prob_partial_meas_alt. 
+ 
+  (* more simplification in LCU_simplify would help here *)
+
+Admitted.
   
 
 End LCU.
