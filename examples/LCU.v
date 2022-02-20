@@ -47,7 +47,7 @@ Proof.
   inversion H0; subst.
   constructor; lia.
 Qed.
-
+(*This is a helper to the helper_rotate and proves the square root is in between -1 and 1* which is a condition of cos(acos)) and sin(acos))*)
 Lemma sqrt_helper:
   forall {k:R},
      (k >= 0) ->
@@ -62,7 +62,7 @@ Proof.
    +rewrite H. rewrite sqrt_1.  rewrite Rplus_0_l.  autorewrite with R_db. apply Rle_0_1.
 Qed.
 
-
+(* This function takes a y_rotation and evaluates it into the correct matrix*)
 Lemma LCU_helperRotate:
   forall {n : nat} (k : R) (Ua Ub : base_ucom (n - 1)),
     (n > 0)%nat ->
@@ -110,34 +110,6 @@ Proof.
       autorewrite with R_db. auto.
 Qed.
 
-Lemma LCU_helper01:
-  forall {n : nat} (k : R) (Ua Ub : base_ucom (n - 1)),
-    (n > 0)%nat ->
-    uc_well_typed Ua ->
-    (k >= 0) -> 
-  uc_well_typed Ub ->
-    y_rotation (2 * acos ( √ (k / (k + 1)))) × ∣0⟩⟨1∣ = √(k / (k + 1)) .* ∣0⟩⟨1∣ .+ √(1 /(k + 1)) .* ∣1⟩⟨1∣.
-Proof. 
-  intros. unfold y_rotation. solve_matrix.
-  -simpl.  replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))).
-   +rewrite cos_acos. auto. apply sqrt_helper. apply H1.
-   +  rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. 
-      rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto.
-      autorewrite with R_db. auto.
-  -simpl. replace (2 * acos (√ (k / (k + 1))) / 2) with (acos (√ (k / (k + 1)))).
-   + rewrite sin_acos.  rewrite Rsqr_sqrt.  replace (1 - k / (k + 1)) with (1 / (k + 1)).
-     autorewrite with R_db. auto.  replace (1 - k / (k + 1)) with ((k + 1) / (k + 1) - k / (k + 1) ).
-     rewrite <- Rdiv_minus_distr. rewrite Rplus_comm. replace ( 1 + k - k) with 1.
-     reflexivity. autorewrite with R_db. rewrite Rplus_assoc.  rewrite <- Rminus_unfold.
-     rewrite Rminus_eq_0. autorewrite with R_db.
-     reflexivity.  autorewrite with R_db. reflexivity.
-     destruct H1.
-     * apply Rlt_le.  apply Rdiv_lt_0_compat. apply H1. apply Rlt_trans with k. apply H1.
-       apply Rlt_n_Sn.
-     * rewrite H1. autorewrite with R_db. apply Rle_refl.
-     * apply sqrt_helper. apply H1.
-   + rewrite Rmult_comm with  (2) ( acos (√ (k / (k + 1)))). simpl. auto. rewrite <- Rmult_div_assoc. replace (2 / 2) with 1. rewrite Rmult_1_r. auto. autorewrite with R_db. auto.
-Qed.
 
 (* uc_eval LCU simplifies to this expression (which can be further simplified...
    but it'll take a little work). -KH *)
@@ -214,20 +186,17 @@ Proof.
   apply uc_well_typed_map_qubits.
   assumption.
    Qed.
-Axiom Unitary_norm : forall {n : nat} (Ua Ub : base_ucom (n - 1)), @Quantum.norm (n - 1) ((uc_eval Ub) .+  -1 .* (uc_eval Ua)) <= 2.
-(*Lemma LCU_helper (k : R) :
-   forall {n : nat} (Ua Ub : base_ucom (n - 1)),
-    (√ (/ (k + 1)) * √ (k * / (k + 1)) .* (∣ 0 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ua)
-     .+ √ (k * / (k + 1)) * √ (k * / (k + 1)) .* (∣ 0 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ua)
-     .+ (√ (/ (k + 1)) * √ (/ (k + 1)) .* (∣ 1 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ua)
-         .+ √ (k * / (k + 1)) * √ (/ (k + 1)) .* (∣ 1 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ua))
-     .+ (- (√ (k * / (k + 1)) * √ (/ (k + 1)))
-         .* (∣ 0 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ub)
-         .+ √ (/ (k + 1)) * √ (/ (k + 1)) .* (∣ 0 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ub)
-         .+ (√ (k * / (k + 1)) * √ (k * / (k + 1))
-             .* (∣ 1 ⟩ × ⟨ 0 ∣ ⊗ uc_eval Ub)
-             .+ - (√ (/ (k + 1)) * √ (k * / (k + 1)))
-                .* (∣ 1 ⟩ × ⟨ 1 ∣ ⊗ uc_eval Ub)))) = (√ (/ (k + 1)) * √ (k * / (k + 1)) .* (∣ 0 ⟩ × ⟨ 0 ∣ ⊗ (uc_eval Ub) + (uc_eval Ua) *)
+ Axiom Unitary_norm : forall {n : nat} (Ua Ub : base_ucom (n - 1)), @Quantum.norm (n - 1) ((uc_eval Ub) .+  -1 .* (uc_eval Ua)) <= 2.
+
+
+Lemma LCU_help1 (k : R):
+  (k >= 0) -> (√ (1 / (k + 1)) * √ (1 / (k + 1))) = 1/ (k + 1).
+Proof.
+intros. Search sqrt. rewrite sqrt_sqrt. auto. destruct H.
+apply Rlt_le.  apply Rdiv_lt_0_compat. apply Rlt_0_1.  apply Rlt_trans with k. apply H.
+apply Rlt_n_Sn. rewrite H. autorewrite with R_db. apply Rle_0_1. Qed.
+
+
 Lemma LCU_success_probability (k : R) :
    forall {n : nat} (Ua Ub : base_ucom (n - 1)),
   (n > 0)%nat -> (k >= 0) -> 
@@ -249,11 +218,15 @@ distribute_plus.
 distribute_scale.
 autorewrite with ket_db.
 Msimpl.
-
-(* and now back to you... *)
-
+(*rewrite LCU_help1 with k by reflexivity. *)
+distribute_adjoint.
+  Msimpl.
+  autorewrite with R_db C_db ket_db eval_db.
+  Print Zero.
+  repeat rewrite <- Mscale_kron_dist_r.
+  solve_matrix.
+  specialize (@Unitary_norm (n) Ua Ub) as H1.
 Admitted.
-  
 
 End LCU.
 
